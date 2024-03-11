@@ -137,6 +137,7 @@ func GetUUID() string {
 }
 
 const keyChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const keyNumbers = "0123456789"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -168,6 +169,15 @@ func GetRandomString(length int) string {
 	return string(key)
 }
 
+func GetRandomNumberString(length int) string {
+	rand.Seed(time.Now().UnixNano())
+	key := make([]byte, length)
+	for i := 0; i < length; i++ {
+		key[i] = keyNumbers[rand.Intn(len(keyNumbers))]
+	}
+	return string(key)
+}
+
 func GetTimestamp() int64 {
 	return time.Now().Unix()
 }
@@ -185,6 +195,13 @@ func Max(a int, b int) int {
 	}
 }
 
+func GetOrDefaultEnvBool(env string, defaultValue bool) bool {
+	if env == "" || os.Getenv(env) == "" {
+		return defaultValue
+	}
+	return os.Getenv(env) == "true"
+}
+
 func GetOrDefaultEnvInt(env string, defaultValue int) int {
 	if env == "" || os.Getenv(env) == "" {
 		return defaultValue
@@ -192,6 +209,18 @@ func GetOrDefaultEnvInt(env string, defaultValue int) int {
 	num, err := strconv.Atoi(os.Getenv(env))
 	if err != nil {
 		logger.SysError(fmt.Sprintf("failed to parse %s: %s, using default value: %d", env, err.Error(), defaultValue))
+		return defaultValue
+	}
+	return num
+}
+
+func GetOrDefaultEnvFloat64(env string, defaultValue float64) float64 {
+	if env == "" || os.Getenv(env) == "" {
+		return defaultValue
+	}
+	num, err := strconv.ParseFloat(os.Getenv(env), 64)
+	if err != nil {
+		logger.SysError(fmt.Sprintf("failed to parse %s: %s, using default value: %f", env, err.Error(), defaultValue))
 		return defaultValue
 	}
 	return num

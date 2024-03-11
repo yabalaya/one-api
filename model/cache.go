@@ -94,7 +94,7 @@ func CacheUpdateUserQuota(id int) error {
 	if !common.RedisEnabled {
 		return nil
 	}
-	quota, err := GetUserQuota(id)
+	quota, err := CacheGetUserQuota(id)
 	if err != nil {
 		return err
 	}
@@ -191,7 +191,7 @@ func SyncChannelCache(frequency int) {
 	}
 }
 
-func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error) {
+func CacheGetRandomSatisfiedChannel(group string, model string, ignoreFirstPriority bool) (*Channel, error) {
 	if !config.MemoryCacheEnabled {
 		return GetRandomSatisfiedChannel(group, model)
 	}
@@ -213,5 +213,10 @@ func CacheGetRandomSatisfiedChannel(group string, model string) (*Channel, error
 		}
 	}
 	idx := rand.Intn(endIdx)
+	if ignoreFirstPriority {
+		if endIdx < len(channels) { // which means there are more than one priority
+			idx = common.RandRange(endIdx, len(channels))
+		}
+	}
 	return channels[idx], nil
 }
